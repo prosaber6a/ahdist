@@ -54,6 +54,8 @@ Route::middleware('auth')->group(function () {
     ]);
 
 
+    Route::get('api/last_month_sales_vs_purhcase', [OperationController::class, 'last_month_sales_vs_purchase']);
+    Route::get('api/last_10_transaction', [TransactionController::class, 'last_10_transaction']);
     Route::get('api/operation/filter/{type}/{party}/{from}/{to}', [OperationController::class, 'filter_operation']);
     //purchase routes
     Route::get('purchase', [OperationController::class, 'index'])->name('purchases');

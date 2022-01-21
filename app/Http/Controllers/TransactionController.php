@@ -348,4 +348,23 @@ EOD;
 
         return redirect()->route('transactions')->with('success', 'Successfully transaction deleted');
     }
+
+
+    /**
+     * return last 10 transaction json
+     */
+    public function last_10_transaction () {
+        $transactions = Transaction::orderBy('updated_at', 'desc')->take(10)->get();
+        $data = [];
+        foreach ($transactions as $transaction) {
+            $data[] = [
+                date('d M, Y', strtotime($transaction->date)),
+                $transaction->description ? $transaction->description: '',
+                number_format($transaction->debit, 2, ".", ","),
+                number_format($transaction->credit, 2, ".", ",")
+            ];
+        }
+        echo json_encode($data);
+        exit();
+    }
 }

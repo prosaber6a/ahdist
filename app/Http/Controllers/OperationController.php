@@ -96,10 +96,10 @@ class OperationController extends Controller
             $row['labour_value'] = $op->labour_value;
             $row['labour_bill'] = $op->labour_bill;
             $row['rate'] = $op->rate;
-            $row['truck_fare_operation'] = (intval($op->truck_fare_operation) === 1) ? "(+)" : "(-)" ;
+            $row['truck_fare_operation'] = (intval($op->truck_fare_operation) === 1) ? "(+)" : "(-)";
             $row['truck_fare'] = $op->truck_fare;
             $row['amount'] = $op->amount;
-            $row['note'] =  $op->note ? $op->note : "";
+            $row['note'] = $op->note ? $op->note : "";
             $row['action'] = '
                 <a href="' . $_edit_url . '"
                    class="btn btn-sm btn-icon btn-primary"><i
@@ -356,4 +356,51 @@ class OperationController extends Controller
 
         return redirect()->route('sales')->with('success', 'Successfully sale deleted');
     }
+
+
+    /**
+     * Return sales vs purchase chart data json
+     */
+
+
+    public function last_month_sales_vs_purchase()
+    {
+
+        $operations = Operation::whereMonth('date', date('m'))->whereYear('date', date('Y'))->get();
+        $data = [];
+        $data[] = ["Day", "Sales", "Purchases"];
+        $current_month = date('m');
+        $current_year = date('y');
+
+
+        $total_day_of_current_months = cal_days_in_month(CAL_GREGORIAN, intval($current_month), intval($current_year));
+        for ($i = 1; $i <= intval(date('d')); $i++) {
+            $_total_purchase = 0;
+            $_total_sale = 0;
+            foreach ($operations as $operation) {
+                if (intval(date('d', strtotime($operation->date))) === $i) {
+
+                    if (intval($operation->type) === 2) {
+                        $_total_sale += $operation->amount;
+                    }
+
+                    if (intval($operation->type) === 1) {
+                        $_total_purchase += $operation->amount;
+                    }
+
+
+                }
+            }
+
+
+            $data[] = [$i . "/" . $current_month . "/" . $current_year, $_total_sale, $_total_purchase];
+
+        }
+
+        echo json_encode($data);
+        exit();
+
+    }
+
+
 }
