@@ -11,7 +11,6 @@
     <script !src="">
         var units = {!!  json_encode(config('constant.unit'))  !!};
         var products = {!!  json_encode($products)  !!};
-        console.log(products);
         $(document).ready(function () {
             $('#date').daterangepicker({
                 singleDatePicker: true,
@@ -19,30 +18,35 @@
             });
 
             // select product
-            $('#product_id').on('change', function (e) {
-                const product_id = parseInt($(this).val());
-                products.every((e) => {
-                    if (parseInt(e.id) === product_id) {
-                        $('.product_unit').html(units[parseInt(e.unit)]);
-                        return;
-                    }
-                })
-            });
+            $('#product_id').on('change', (e) => handle_product_change());
+
+            @isset($recent_purchase)
+
+            calculateBagWeight();
+
+
+            handle_product_change();
+
+
+            @endisset
 
 
         });
 
-        //on input bag value
-        // $('#bag').on('change', calculateBagWeight());
+        function handle_product_change () {
+            const product_id = parseInt($('#product_id').val());
+            const product = products.find(e => {
+                return parseInt(e.id) === product_id;
+            });
 
-        // on change receive weight
+            $('.product_unit').html(units[parseInt(product.unit)]);
+        }
 
         document.getElementById('bag').addEventListener('change', calculateBagWeight);
         document.getElementById('receive_weight').addEventListener('change', calculateFinalWeight);
         document.getElementById('rate').addEventListener('change', calculateTotalAmount);
         document.getElementById('truck_fare').addEventListener('change', calculateTotalAmount);
         document.getElementById('labour_value').addEventListener('change', calculateLabourBill);
-        // document.getElementsByName('truck_fare_operation').addEventListener('click');
         document.getElementById('truck_fare_operation_add').addEventListener('click', calculateTotalAmount);
         document.getElementById('truck_fare_operation_sub').addEventListener('click', calculateTotalAmount);
 
@@ -149,7 +153,7 @@
                             <!--begin::Input-->
                             <input type="text" name="truck_no" id="truck_no" class="form-control mb-2"
                                    placeholder="Truck No"
-                                   value="{{ old('truck_no') }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->truck_no }}@else{{ old('truck_no') }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
@@ -164,8 +168,10 @@
                                     data-placeholder="Select a product">
                                 <option></option>
                                 @foreach($products as $product)
-                                    <option @if(intval(old('product_id')) ===  $product->id) selected="selected"
-                                            @endif value="{{ $product->id }}">{{ $product->name }}</option>
+                                    <option
+                                        @if(isset($recent_purchase)) {{ $recent_purchase->product_id }} selected="selected" @else
+                                        @if(intval(old('product_id')) ===  $product->id) selected="selected"
+                                            @endif @endif value="{{ $product->id }}">{{ $product->name }}</option>
                                 @endforeach
                             </select>
                             <!--end::Input-->
@@ -179,7 +185,7 @@
                             <!--end::Label-->
                             <!--begin::Input-->
                             <input type="number" name="bag" id="bag" class="form-control mb-2" placeholder="Bag"
-                                   value="{{ old('bag') }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->bag }}@else{{ old('bag', 0) }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
@@ -193,7 +199,7 @@
                             <!--begin::Input-->
                             <input type="text" disabled id="bag_weight" class="form-control mb-2"
                                    placeholder="Bag Weight"
-                                   value="{{ old('bag_weight', 0) }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->bag_weight }}@else{{ old('bag_weight', 0) }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
@@ -208,7 +214,7 @@
                             <div class="input-group mb-5">
                                 <input type="text" name="send_weight" id="send_weight" class="form-control"
                                        placeholder="Send Weight"
-                                       value="{{ old('send_weight', 0) }}">
+                                       value="@if(isset($recent_purchase)){{ $recent_purchase->send_weight }}@else{{ old('send_weight', 0) }}@endif">
                                 <span class="input-group-text product_unit">Unit</span>
                             </div>
 
@@ -225,7 +231,7 @@
                             <div class="input-group mb-5">
                                 <input type="text" name="receive_weight" id="receive_weight" class="form-control"
                                        placeholder="Receive Weight"
-                                       value="{{ old('receive_weight', 0) }}">
+                                       value="@if(isset($recent_purchase)){{ $recent_purchase->receive_weight }}@else{{ old('receive_weight', 0) }}@endif">
                                 <span class="input-group-text product_unit">Unit</span>
                             </div>
                             <!--end::Input-->
@@ -242,7 +248,7 @@
                             <div class="input-group mb-5">
                                 <input type="text" id="final_weight" class="form-control" disabled
                                        placeholder="Final Weight"
-                                       value="{{ old('final_weight', 0) }}">
+                                       value="@if(isset($recent_purchase)){{ $recent_purchase->final_weight }}@else{{ old('final_weight', 0) }}@endif">
                                 <span class="input-group-text product_unit">Unit</span>
                             </div>
                             <!--end::Input-->
@@ -257,7 +263,7 @@
                             <!--begin::Input-->
                             <input type="number" name="labour_value" id="labour_value" class="form-control mb-2"
                                    placeholder="L.Value"
-                                   value="{{ old('labour_value', 0) }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->labour_value }}@else{{ old('labour_value', 0) }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
@@ -270,7 +276,7 @@
                             <!--begin::Input-->
                             <input type="number" disabled id="labour_bill" class="form-control mb-2"
                                    placeholder="L.Bill"
-                                   value="{{ old('labour_bill', 0) }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->labour_bill }}@else{{ old('labour_bill', 0) }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
@@ -282,7 +288,7 @@
                             <!--end::Label-->
                             <!--begin::Input-->
                             <input type="text" name="rate" id="rate" class="form-control mb-2" placeholder="Rate"
-                                   value="{{ old('rate', 0) }}">
+                                   value="@if(isset($recent_purchase)){{ $recent_purchase->rate }}@else{{ old('rate', 0) }}@endif">
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->

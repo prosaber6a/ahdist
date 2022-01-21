@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
         ]
     ]);
 
+
+    Route::get('api/operation/filter/{type}/{party}/{from}/{to}', [OperationController::class, 'filter_operation']);
     //purchase routes
     Route::get('purchase', [OperationController::class, 'index'])->name('purchases');
     Route::get('purchase/create', [OperationController::class, 'create'])->name('create_purchase');
@@ -93,13 +95,13 @@ Route::middleware('auth')->group(function () {
     Route::post('transaction', [TransactionController::class, 'store'])->name('store_transaction');
     Route::put('transaction/{transaction}', [TransactionController::class, 'update'])->name('update_transaction');
     Route::delete('transaction/{transaction}', [TransactionController::class, 'destroy'])->name('delete_transaction');
-    Route::get('api/transaction/filter/{party_id}/{acc_id}/{from}/{to}', [TransactionController::class, 'filter_transaction'])->middleware('auth');
+    Route::get('api/transaction/filter/{party_id}/{acc_id}/{from}/{to}', [TransactionController::class, 'filter_transaction']);
 
     //User Setting
-    Route::get('user-setting', [UserSettingController::class, 'current_user_setting'])->middleware('auth')->name('current_user_setting');
-    Route::post('user-setting', [UserSettingController::class, 'update_current_user_setting'])->middleware('auth')->name('update_current_user_setting');
-    Route::get('change-password', [UserSettingController::class, 'change_current_user_password'])->middleware('auth')->name('change_current_user_password');
-    Route::post('change-password', [UserSettingController::class, 'update_current_user_password'])->middleware('auth')->name('update_current_user_password');
+    Route::get('user-setting', [UserSettingController::class, 'current_user_setting'])->name('current_user_setting');
+    Route::post('user-setting', [UserSettingController::class, 'update_current_user_setting'])->name('update_current_user_setting');
+    Route::get('change-password', [UserSettingController::class, 'change_current_user_password'])->name('change_current_user_password');
+    Route::post('change-password', [UserSettingController::class, 'update_current_user_password'])->name('update_current_user_password');
 });
 
 

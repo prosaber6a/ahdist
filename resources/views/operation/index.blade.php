@@ -14,7 +14,94 @@
     <script>
 
 
-        $("#datatable").DataTable({
+        let filter_from = "";
+        let filter_to = "";
+
+
+        $("#daterange").daterangepicker({
+            timePicker: false,
+            startDate: moment().startOf("hour"),
+            endDate: moment().startOf("hour").add(32, "hour"),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            locale: {
+                format: "YYYY-MM-DD"
+            }
+        }, function (start, end, label) {
+            filter_from = start.format('YYYY-MM-DD');
+            filter_to = end.format('YYYY-MM-DD');
+            table_filter();
+
+        });
+
+        $('#party').on('change', table_filter);
+
+        function table_filter() {
+            const party_id = $('#party').val();
+            const date_from = filter_from ? filter_from : '-';
+            const date_to = filter_to ? filter_to : '-';
+            if (party_id || acc_id || date_to || date_from) {
+                console.log('/api/operation/filter/{{ $operation_type }}/'+ party_id + '/' + date_from + '/' + date_to);
+                $.ajax({
+                    url: '/api/operation/filter/{{ $operation_type }}/'+ party_id + '/' + date_from + '/' + date_to,
+                    method: 'GET',
+                    success: function (response) {
+                        response = JSON.parse(response)
+                        if (response.data.length) {
+
+                            let tr = "";
+                            let total_debit = 0;
+                            let total_credit = 0;
+                            let balance = 0;
+                            response.data.forEach((e) => {
+                                total_credit += parseFloat(e.credit);
+                                total_debit += parseFloat(e.debit);
+                                balance += (e.credit - e.debit);
+                                tr += `
+                                <tr>
+                                    <td>${e.sl}</td>
+                                    <td>${e.date}</td>
+                                    <td>${e.party}</td>
+                                    <td>${e.w_no}</td>
+                                    <td>${e.product}</td>
+                                    <td>${e.truck_no}</td>
+                                    <td>${e.bag}</td>
+                                    <td>${e.bag_weight}</td>
+                                    <td>${e.send_weight}</td>
+                                    <td>${e.receive_weight}</td>
+                                    <td>${e.final_weight}</td>
+                                    <td>${e.labour_value}</td>
+                                    <td>${e.labour_bill}</td>
+                                    <td>${e.rate}</td>
+                                    <td>${e.truck_fare_operation} ${e.truck_fare}</td>
+                                    <td>${e.amount.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>${e.note}</td>
+                                    <td class="action_cell">${e.action}</td>
+                                <tr>
+                                `;
+
+                            });
+                            $('#datatable tbody').html(tr);
+
+
+                        } else {
+                            $('#datatable tbody').html('<tr><th colspan="18" class="text-center bg-danger">No data found</th></tr>');
+
+                        }
+
+                    }
+                })
+            }
+        }
+
+
+        /*$("#datatable").DataTable({
             "language": {
                 "lengthMenu": "Show _MENU_",
             },
@@ -30,8 +117,8 @@
                 "<'col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start'i>" +
                 "<'col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end'p>" +
                 ">",
-            responsive: true
-        });
+            // responsive: true
+        });*/
 
         $('.deleteForm').on('submit', function (e) {
             e.preventDefault();
@@ -60,6 +147,86 @@
         }
 
 
+        function handlePrintBtn() {
+            $("#datatable").DataTable().destroy();
+            const originalContents = document.body.innerHTML;
+            let print_content = `<div class="header"><h1>{{ env('app_name') }}</h1><h3>{{ (intval($operation_type) === 1) ? "Purchase" : "Sale" }} History</h3></div>`;
+            print_content += document.querySelector('#printArea').innerHTML;
+
+
+            print_content += "<footer>Pro Coder || https://procoder.ca</footer>";
+
+
+            myWindow = window.open('', '', 'width=800,height=700');
+            let print_style = `
+<style>
+* {
+font-family: Sans-serif;
+}
+.header {
+text-align: center;
+margin-bottom: 10px;
+}
+
+table {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table td, table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+table tr:nth-child(even){background-color: #f2f2f2;}
+
+table tr:hover {background-color: #ddd;}
+
+table th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #04AA6D;
+    color: white;
+}
+
+
+footer {
+    font-size: 12px;
+    text-align: center;
+}
+
+@page {
+    size: A4 landscape;
+}
+
+@media print {
+    footer {
+        position: fixed;
+        bottom: 0;
+    }
+
+    .content-block, p {
+        page-break-inside: avoid;
+    }
+
+    html, body {
+        width: 210mm;
+        height: 297mm;
+    }
+}
+</style>
+            `;
+            myWindow.document.head.innerHTML = myWindow.document.head.innerHTML + print_style;
+            myWindow.document.body.innerHTML = print_content;
+            myWindow.document.querySelectorAll('.action_cell').forEach(e => e.remove());
+            myWindow.focus();
+            myWindow.print(); //DOES NOT WORK
+
+            // document.body.innerHTML = originalContents;
+        }
+
 
     </script>
 @endsection
@@ -69,19 +236,62 @@
     <div class="post d-flex flex-column-fluid" id="kt_post">
         <!--begin::Container-->
         <div id="kt_content_container" class="container-xxl">
+
+            <div class="card card-flush mb-10">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12 col-md-6 col-lg-4">
+                            <div class="form-floating mb-7">
+                                <input type="text" class="form-control" id="daterange" placeholder="Date Range"/>
+                                <label for="daterange">Date Range</label>
+                            </div>
+                        </div>
+                        @isset($parties)
+                            <div class="col-sm-12 col-md-6 col-lg-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="party" aria-label="Select a party">
+                                        <option selected value="0">All</option>
+                                        @foreach($parties as $party)
+                                            <option value="{{ $party->id }}">{{ $party->name }}
+                                                - {{ $party->company }}</option>
+                                        @endforeach
+                                    </select>
+                                    <label for="party">Party</label>
+                                </div>
+                            </div>
+                        @endisset
+
+                    </div>
+                </div>
+            </div>
+
             <!--begin::Category-->
             <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        @if(intval($operation_type) === 1)
+                            Purchases
+                        @else
+                            Sales
+                        @endif
+                    </h3>
+                    <div class="card-toolbar">
+                        <button type="button" class="btn btn-sm btn-light" onclick="handlePrintBtn()">
+                            Print
+                        </button>
+                    </div>
+                </div>
 
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="card-body pt-0 overflow-scroll" id="printArea">
                     <!--begin::Table-->
-                    <table class="table nowrap table-bordered gy-5 gs-7 border rounded" id="datatable">
+                    <table class="table table-responsive table-striped table-hover table-bordered gy-5 gs-7 border rounded" id="datatable">
                         <!--begin::Table head-->
                         <thead>
                         <!--begin::Table row-->
                         <tr class="fw-bolder fs-6 text-gray-800 px-7">
                             <th>#</th>
-                            <th>Date</th>
+                            <th style="min-width: 101px;">Date</th>
                             <th>Party</th>
                             <th>W. No.</th>
                             <th>Product</th>
@@ -97,7 +307,7 @@
                             <th>Truck Fare</th>
                             <th>Total Amount</th>
                             <th>Note</th>
-                            <th class="w-100px">Actions</th>
+                            <th class="w-100px action_cell">Actions</th>
                         </tr>
                         <!--end::Table row-->
                         </thead>
@@ -109,7 +319,6 @@
                             @foreach($operations as $operation)
                                 <!--begin::Table row-->
                                 <tr>
-
                                     <td>{{ $i++ }}</td>
                                     <td> {{ date('d-M-Y', strtotime($operation->date)) }}</td>
                                     <td>{{ $operation->party->name }} - {{ $operation->party->company }}</td>
@@ -124,72 +333,29 @@
                                     <td>{{ $operation->labour_value }}</td>
                                     <td>{{ $operation->labour_bill }}</td>
                                     <td>{{ $operation->rate }}</td>
-                                    <td>@if(intval($operation->truck_fare_operation) === 1) (+) @else (-) @endif {{ $operation->truck_fare }}</td>
+                                    <td>@if(intval($operation->truck_fare_operation) === 1)
+                                            (+) @else (-) @endif {{ $operation->truck_fare }}</td>
                                     <td>{{ $operation->amount }}</td>
 
                                     <td>
                                         {{ $operation->note }}
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end action_cell">
                                         <a href="@if($operation_type === 1){{ route('edit_purchase', $operation->id) }}@else{{ route('edit_sale', $operation->id) }}@endif"
                                            class="btn btn-icon btn-primary btn-sm"><i
                                                 class="bi bi-pencil-square"></i></a>
-                                        <a href="#" onclick="$('#delete_operation_{{$operation->id}}').submit()" class="btn btn-icon btn-danger btn-sm"
+                                        <a href="#" onclick="$('#delete_operation_{{$operation->id}}').submit()"
+                                           class="btn btn-icon btn-danger btn-sm"
                                            data-kt-ecommerce-category-filter="delete_row"><i
                                                 class="bi bi-trash"></i></a>
-                                        <form id="delete_operation_{{$operation->id}}" action="@if($operation_type === 1){{ route('delete_purchase', $operation->id) }}@else{{ route('delete_sale', $operation->id) }}@endif"
+                                        <form id="delete_operation_{{$operation->id}}" class="d-inline"
+                                              action="@if($operation_type === 1){{ route('delete_purchase', $operation->id) }}@else{{ route('delete_sale', $operation->id) }}@endif"
                                               method="post"
                                               class="deleteForm">
                                             @csrf
                                             @method('delete')
                                         </form>
 
-
-                                        {{--<a href="#" class="btn btn-sm btn-light btn-active-light-primary"
-                                           data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
-                                            <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-                                            <span class="svg-icon svg-icon-5 m-0">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                     height="24" viewBox="0 0 24 24" fill="none">
-                                                    <path
-                                                        d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z"
-                                                        fill="black"/>
-                                                </svg>
-                                            </span>
-                                            <!--end::Svg Icon-->
-                                        </a>
-                                        <!--begin::Menu-->
-                                        <div
-                                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"
-                                            data-kt-menu="true">
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <button onclick="handleShowBtn({{$operation->id}})" class="btn btn-icon btn-success w-100"><i
-                                                        class="bi bi-eye"></i></button>
-                                            </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="@if($operation_type === 1){{ route('edit_purchase', $operation->id) }}@else{{ route('edit_sale', $operation->id) }}@endif"
-                                                   class="btn btn-icon btn-primary w-100"><i
-                                                        class="bi bi-pencil-square"></i></a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <form action="@if($operation_type === 1){{ route('delete_purchase', $operation->id) }}@else{{ route('delete_sale', $operation->id) }}@endif"
-                                                      method="post"
-                                                      class="deleteForm">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="submit" class="btn btn-icon btn-danger w-100"
-                                                            data-kt-ecommerce-category-filter="delete_row"><i
-                                                            class="bi bi-trash"></i></button>
-                                                </form>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        </div>
-                                        <!--end::Menu-->--}}
                                     </td>
                                     <!--end::Action=-->
                                 </tr>
@@ -212,7 +378,8 @@
 
 
     <!-- Modal:start -->
-    <div class="modal fade" id="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">

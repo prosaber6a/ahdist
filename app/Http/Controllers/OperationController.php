@@ -28,19 +28,104 @@ class OperationController extends Controller
      */
     public function index()
     {
+        $data = [];
+        $data['operation_type'] = $this->operation_type;
         if ($this->operation_type === 1) {
             //purchase
-            $operation = Operation::where('type', 1)
+            $data['operations'] = Operation::where('type', 1)
                 ->orderBy('updated_at', 'desc')
                 ->get();
+            $data['parties'] = Party::where('type', 1)->get();
         } else {
             //sale
-            $operation = Operation::where('type', 2)
+            $data['operations'] = Operation::where('type', 2)
                 ->orderBy('updated_at', 'desc')
                 ->get();
+            $data['parties'] = Party::where('type', 2)->get();
         }
 
-        return view('operation.index', ['operation_type' => $this->operation_type, 'operations' => $operation]);
+        return view('operation.index', $data);
+    }
+
+    /**
+     * Return JSON
+     */
+
+    public function filter_operation($type = 0, $party = 0, $from = 0, $to = 0)
+    {
+        $type = intval($type);
+        $party = intval($party);
+        $from = ($from == 0) ? 0 : date('Y-m-d', strtotime($from));
+        $to = ($to == 0) ? 0 : date('Y-m-d', strtotime($to));
+
+        $operation = Operation::where('type', $type)->orderBy('date', 'desc');
+
+        if (!empty($from) && !empty($to) && strtotime($from) && strtotime($to)) {
+            $operation = $operation->whereBetween('date', [$from, $to]);
+        }
+
+        if ($party > 0) {
+            $operation = $operation->where('party_id', $party);
+        }
+
+        $operation = $operation->get();
+
+        $data = [];
+        $i = 1;
+        foreach ($operation as $op) {
+            if ($type === 1) {
+                $_edit_url = route('edit_purchase', $op->id);
+                $_delete_url = route('delete_purchase', $op->id);
+            } else {
+                $_edit_url = route('edit_sale', $op->id);
+                $_delete_url = route('delete_sale', $op->id);
+            }
+
+            $row = [];
+            $row['sl'] = $i++;
+            $row['date'] = date('d M, Y', strtotime($op->date));
+            $row['party'] = $op->party->name;
+            $row['w_no'] = $op->w_no ? $op->w_no : "";
+            $row['truck_no'] = $op->truck_no ? $op->truck_no : "";
+            $row['product'] = $op->product->name;
+            $row['bag'] = $op->bag;
+            $row['bag_weight'] = $op->bag_weight;
+            $row['send_weight'] = $op->send_weight;
+            $row['receive_weight'] = $op->receive_weight;
+            $row['final_weight'] = $op->final_weight;
+            $row['labour_value'] = $op->labour_value;
+            $row['labour_bill'] = $op->labour_bill;
+            $row['rate'] = $op->rate;
+            $row['truck_fare_operation'] = (intval($op->truck_fare_operation) === 1) ? "(+)" : "(-)" ;
+            $row['truck_fare'] = $op->truck_fare;
+            $row['amount'] = $op->amount;
+            $row['note'] =  $op->note ? $op->note : "";
+            $row['action'] = '
+                <a href="' . $_edit_url . '"
+                   class="btn btn-sm btn-icon btn-primary"><i
+                        class="bi bi-pencil-square"></i></a>
+                <form class="d-inline" action="' . $_delete_url . '" method="post"
+                      class="deleteForm">
+                    <input type="hidden" name="_token" value="' . csrf_token() . '">
+                    <input type="hidden" name="_method" value="delete">
+                    <button type="submit" class="btn btn-sm btn-icon btn-danger"
+                            data-kt-ecommerce-category-filter="delete_row"><i
+                            class="bi bi-trash"></i></button>
+                </form>
+                ';
+            $data[] = $row;
+        }
+
+        if (count($data) > 0) {
+
+            echo json_encode(['status' => 200, 'data' => $data]);
+        } else {
+            echo json_encode(['status' => 404, 'data' => '']);
+        }
+
+        exit();
+
+
     }
 
     /**
@@ -52,19 +137,19 @@ class OperationController extends Controller
         $data = [];
         if ($this->operation_type === 1) {
             //purchase
-            $data['party'] = Party::where('type', 1)
+            $data['parties'] = Party::where('type', 1)
                 ->where('status', 1)
                 ->orderBy('name', 'asc')
                 ->get();
         } else {
             //sale
-            $data['party'] = Party::where('type', 2)
+            $data['parties'] = Party::where('type', 2)
                 ->where('status', 1)
                 ->orderBy('name', 'asc')
                 ->get();
         }
 
-        $data['product'] = Product::where('status', 1)
+        $data['products'] = Product::where('status', 1)
             ->orderBy('name', 'asc')
             ->get();
 
@@ -109,8 +194,14 @@ class OperationController extends Controller
     {
         $data = $this->other_table_data();
 
+        $data['operation_type'] = $this->operation_type;
 
-        return view('operation.create', ['operation_type' => $this->operation_type, 'parties' => $data['party'], 'products' => $data['product']]);
+        if ($this->operation_type === 2 && isset($_GET['purchase']) && $_GET['purchase'] != '') {
+            $data['recent_purchase'] = Operation::find(intval($_GET['purchase']));
+        }
+
+
+        return view('operation.create', $data);
 
 
     }
@@ -160,7 +251,7 @@ class OperationController extends Controller
         ]);
 
         if ($this->operation_type == 1) {
-            return redirect()->route('purchases')->with('success', 'Successfully purchase added');
+            return redirect()->route('create_sale', ['purchase' => $query->id])->with('success', 'Successfully purchase added');
         }
 
         return redirect()->route('sales')->with('success', 'Successfully sale added');

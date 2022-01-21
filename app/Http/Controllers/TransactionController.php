@@ -60,11 +60,11 @@ class TransactionController extends Controller
         }
 
         if ($party_id > 0) {
-            $transactions->where('party_id', $party_id);
+            $transactions = $transactions->where('party_id', $party_id);
         }
 
         if ($acc_id > 0) {
-            $transactions->where('account_id', $acc_id);
+            $transactions = $transactions->where('account_id', $acc_id);
         }
 
         $transactions = $transactions->get();
