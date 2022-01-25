@@ -68,20 +68,20 @@
                                     <td>${e.sl}</td>
                                     <td>${e.date}</td>
                                     <td>${e.party}</td>
-                                    <td>${e.w_no}</td>
+                                    <td class="w_no_cell">${e.w_no}</td>
                                     <td>${e.product}</td>
-                                    <td>${e.truck_no}</td>
+                                    <td class="truck_no_cell">${e.truck_no}</td>
                                     <td>${e.bag}</td>
                                     <td>${e.bag_weight}</td>
                                     <td>${e.send_weight}</td>
                                     <td>${e.receive_weight}</td>
                                     <td>${e.final_weight}</td>
-                                    <td>${e.labour_value}</td>
+                                    <td class="l_value_cell">${e.labour_value}</td>
                                     <td>${e.labour_bill}</td>
                                     <td>${e.rate}</td>
                                     <td>${e.truck_fare_operation} ${e.truck_fare}</td>
                                     <td>${e.amount.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td>${e.note}</td>
+                                    <td class="note_cell">${e.note}</td>
                                     <td class="action_cell">${e.action}</td>
                                 <tr>
                                 `;
@@ -100,25 +100,6 @@
             }
         }
 
-
-        /*$("#datatable").DataTable({
-            "language": {
-                "lengthMenu": "Show _MENU_",
-            },
-            "dom":
-                "<'row'" +
-                "<'col-sm-6 d-flex align-items-center justify-conten-start'l>" +
-                "<'col-sm-6 d-flex align-items-center justify-content-end'f>" +
-                ">" +
-
-                "<'table-responsive'tr>" +
-
-                "<'row'" +
-                "<'col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start'i>" +
-                "<'col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end'p>" +
-                ">",
-            // responsive: true
-        });*/
 
         $('.deleteForm').on('submit', function (e) {
             e.preventDefault();
@@ -148,7 +129,7 @@
 
 
         function handlePrintBtn() {
-            $("#datatable").DataTable().destroy();
+            // $("#datatable").DataTable().destroy();
             const originalContents = document.body.innerHTML;
             let print_content = `<div class="header"><h1>{{ env('app_name') }}</h1><h3>{{ (intval($operation_type) === 1) ? "Purchase" : "Sale" }} History</h3></div>`;
             print_content += document.querySelector('#printArea').innerHTML;
@@ -211,16 +192,17 @@ footer {
         page-break-inside: avoid;
     }
 
-    html, body {
-        width: 210mm;
-        height: 297mm;
-    }
+
 }
 </style>
             `;
             myWindow.document.head.innerHTML = myWindow.document.head.innerHTML + print_style;
             myWindow.document.body.innerHTML = print_content;
             myWindow.document.querySelectorAll('.action_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.truck_no_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.w_no_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.note_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.l_value_cell').forEach(e => e.remove());
             myWindow.focus();
             myWindow.print(); //DOES NOT WORK
 
@@ -293,20 +275,20 @@ footer {
                             <th>#</th>
                             <th style="min-width: 101px;">Date</th>
                             <th>Party</th>
-                            <th>W. No.</th>
+                            <th class="w_no_cell">W. No.</th>
                             <th>Product</th>
-                            <th>Truck No</th>
+                            <th class="truck_no_cell">Truck No</th>
                             <th>Bag</th>
                             <th>Bag Weight</th>
                             <th>Send Weight</th>
                             <th>Receive Weight</th>
                             <th>Final Weight</th>
-                            <th>L. Value</th>
+                            <th class="l_value_cell">L. Value</th>
                             <th>L. Bill</th>
                             <th>Rate</th>
                             <th>Truck Fare</th>
                             <th>Total Amount</th>
-                            <th>Note</th>
+                            <th class="note_cell">Note</th>
                             <th class="w-100px action_cell">Actions</th>
                         </tr>
                         <!--end::Table row-->
@@ -322,22 +304,22 @@ footer {
                                     <td>{{ $i++ }}</td>
                                     <td> {{ date('d-M-Y', strtotime($operation->date)) }}</td>
                                     <td>{{ $operation->party->name }} - {{ $operation->party->company }}</td>
-                                    <td>{{ $operation->w_no }}</td>
+                                    <td class="w_no_cell">{{ $operation->w_no }}</td>
                                     <td>{{ $operation->product->name }}</td>
-                                    <td>{{ $operation->truck_no }}</td>
+                                    <td class="truck_no_cell">{{ $operation->truck_no }}</td>
                                     <td>{{ $operation->bag }}</td>
                                     <td>{{ $operation->bag_weight }}</td>
                                     <td>{{ $operation->send_weight }}</td>
                                     <td>{{ $operation->receive_weight }}</td>
                                     <td>{{ $operation->receive_weight - $operation->bag_weight }}</td>
-                                    <td>{{ $operation->labour_value }}</td>
+                                    <td class="l_value_cell">{{ $operation->labour_value }}</td>
                                     <td>{{ $operation->labour_bill }}</td>
                                     <td>{{ $operation->rate }}</td>
                                     <td>@if(intval($operation->truck_fare_operation) === 1)
                                             (+) @else (-) @endif {{ $operation->truck_fare }}</td>
                                     <td>{{ $operation->amount }}</td>
 
-                                    <td>
+                                    <td class="note_cell">
                                         {{ $operation->note }}
                                     </td>
                                     <td class="text-end action_cell">
