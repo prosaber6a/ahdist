@@ -72,14 +72,14 @@
                                     <td>${e.product}</td>
                                     <td class="truck_no_cell">${e.truck_no}</td>
                                     <td>${e.bag}</td>
-                                    <td>${e.bag_weight}</td>
+                                    <td class="bag_weight_cell">${e.bag_weight}</td>
                                     <td>${e.send_weight}</td>
                                     <td>${e.receive_weight}</td>
                                     <td>${e.final_weight}</td>
                                     <td class="l_value_cell">${e.labour_value}</td>
-                                    <td>${e.labour_bill}</td>
+                                    <td class="l_bill_cell">${e.labour_bill}</td>
                                     <td>${e.rate}</td>
-                                    <td>${e.truck_fare_operation} ${e.truck_fare}</td>
+                                    <td class="truck_fare_cell">${e.truck_fare_operation} ${e.truck_fare}</td>
                                     <td>${e.amount.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     <td class="note_cell">${e.note}</td>
                                     <td class="action_cell">${e.action}</td>
@@ -179,7 +179,7 @@ footer {
 }
 
 @page {
-    size: A4 landscape;
+    size: A4 portrait;
 }
 
 @media print {
@@ -203,6 +203,9 @@ footer {
             myWindow.document.querySelectorAll('.w_no_cell').forEach(e => e.remove());
             myWindow.document.querySelectorAll('.note_cell').forEach(e => e.remove());
             myWindow.document.querySelectorAll('.l_value_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.l_bill_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.bag_weight_cell').forEach(e => e.remove());
+            myWindow.document.querySelectorAll('.truck_fare_cell').forEach(e => e.remove());
             myWindow.focus();
             myWindow.print(); //DOES NOT WORK
 
@@ -274,6 +277,8 @@ footer {
                         <thead>
                         <!--begin::Table row-->
                         <tr class="fw-bolder fs-6 text-gray-800 px-7">
+
+
                             <th>#</th>
                             <th style="min-width: 101px;">Date</th>
                             <th>Party</th>
@@ -281,14 +286,14 @@ footer {
                             <th>Product</th>
                             <th class="truck_no_cell">Truck No</th>
                             <th>Bag</th>
-                            <th>Bag Weight</th>
+                            <th class="bag_weight_cell">Bag Weight</th>
                             <th>Send Weight</th>
                             <th>Receive Weight</th>
                             <th>Final Weight</th>
                             <th class="l_value_cell">L. Value</th>
-                            <th>L. Bill</th>
+                            <th class="l_bill_cell">L. Bill</th>
                             <th>Rate</th>
-                            <th>Truck Fare</th>
+                            <th class="truck_fare_cell">Truck Fare</th>
                             <th>Total Amount</th>
                             <th class="note_cell">Note</th>
                             <th class="w-100px action_cell">Actions</th>
@@ -310,14 +315,14 @@ footer {
                                     <td>{{ $operation->product->name }}</td>
                                     <td class="truck_no_cell">{{ $operation->truck_no }}</td>
                                     <td>{{ $operation->bag }}</td>
-                                    <td>{{ $operation->bag_weight }}</td>
+                                    <td class="bag_weight_cell">{{ $operation->bag_weight }}</td>
                                     <td>{{ $operation->send_weight }}</td>
                                     <td>{{ $operation->receive_weight }}</td>
                                     <td>{{ $operation->receive_weight - $operation->bag_weight }}</td>
                                     <td class="l_value_cell">{{ $operation->labour_value }}</td>
-                                    <td>{{ $operation->labour_bill }}</td>
+                                    <td class="l_bill_cell">{{ $operation->labour_bill }}</td>
                                     <td>{{ $operation->rate }}</td>
-                                    <td>@if(intval($operation->truck_fare_operation) === 1)
+                                    <td class="truck_fare_cell">@if(intval($operation->truck_fare_operation) === 1)
                                             (+) @else (-) @endif {{ $operation->truck_fare }}</td>
                                     <td>{{ $operation->amount }}</td>
 
