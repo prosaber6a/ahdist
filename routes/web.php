@@ -100,7 +100,11 @@ Route::middleware('auth')->group(function () {
     Route::get('api/transaction/filter/{party_id}/{acc_id}/{from}/{to}', [TransactionController::class, 'filter_transaction']);
 
     //User Setting
+    Route::get('users', [UserSettingController::class, 'index'])->name('users_index');
+    Route::post('users', [UserSettingController::class,'user_store'])->name('user_store');
     Route::get('user-setting', [UserSettingController::class, 'current_user_setting'])->name('current_user_setting');
+    Route::get('users/{user}/edit', [UserSettingController::class,'user_edit'])->name('user_edit');
+    Route::put('users/{user}', [UserSettingController::class,'user_update'])->name('user_update');
     Route::post('user-setting', [UserSettingController::class, 'update_current_user_setting'])->name('update_current_user_setting');
     Route::get('change-password', [UserSettingController::class, 'change_current_user_password'])->name('change_current_user_password');
     Route::post('change-password', [UserSettingController::class, 'update_current_user_password'])->name('update_current_user_password');

@@ -107,10 +107,11 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-light btn-active-light-primary"
-                                           data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
-                                            <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
-                                            <span class="svg-icon svg-icon-5 m-0">
+                                        @if(intval(Auth::user()->user_type) === 1)
+                                            <a href="#" class="btn btn-sm btn-light btn-active-light-primary"
+                                               data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
+                                                <!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
+                                                <span class="svg-icon svg-icon-5 m-0">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24"
                                                      height="24" viewBox="0 0 24 24" fill="none">
                                                     <path
@@ -118,33 +119,35 @@
                                                         fill="black"/>
                                                 </svg>
                                             </span>
-                                            <!--end::Svg Icon-->
-                                        </a>
-                                        <!--begin::Menu-->
-                                        <div
-                                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"
-                                            data-kt-menu="true">
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="{{ route('edit_product', $product->id) }}"
-                                                   class="btn btn-icon btn-primary w-100"><i
-                                                        class="bi bi-pencil-square"></i></a>
+                                                <!--end::Svg Icon-->
+                                            </a>
+                                            <!--begin::Menu-->
+                                            <div
+                                                class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4"
+                                                data-kt-menu="true">
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item px-3">
+                                                    <a href="{{ route('edit_product', $product->id) }}"
+                                                       class="btn btn-icon btn-primary w-100"><i
+                                                            class="bi bi-pencil-square"></i></a>
+                                                </div>
+                                                <!--end::Menu item-->
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item px-3">
+                                                    <form action="{{ route('delete_product', $product->id) }}"
+                                                          method="post"
+                                                          class="deleteForm">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <button type="submit" class="btn btn-icon btn-danger w-100"
+                                                                data-kt-ecommerce-category-filter="delete_row"><i
+                                                                class="bi bi-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                                <!--end::Menu item-->
                                             </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <form action="{{ route('delete_product', $product->id) }}" method="post"
-                                                      class="deleteForm">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="submit" class="btn btn-icon btn-danger w-100"
-                                                            data-kt-ecommerce-category-filter="delete_row"><i
-                                                            class="bi bi-trash"></i></button>
-                                                </form>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        </div>
-                                        <!--end::Menu-->
+                                            <!--end::Menu-->
+                                        @else - @endif
                                     </td>
                                     <!--end::Action=-->
                                 </tr>

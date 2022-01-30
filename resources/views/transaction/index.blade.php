@@ -308,19 +308,22 @@ footer {
                                     <td> {{ number_format($balance, 2, ".", ",") }} </td>
 
                                     <td class="text-end flex-center d-flex gap-2 action_cell">
-                                        <a href="{{ route('edit_transaction', $transaction->id) }}"
-                                           class="btn btn-sm btn-icon btn-primary"><i
-                                                class="bi bi-pencil-square"></i></a>
-                                        <a href="#" onclick="$('#transaction_delete_{{$transaction->id}}').submit()"
-                                           class="btn btn-sm btn-icon btn-danger"
-                                           data-kt-ecommerce-category-filter="delete_row"><i
-                                                class="bi bi-trash"></i></a>
-                                        <form id="transaction_delete_{{$transaction->id}}"
-                                              action="{{ route('delete_transaction', $transaction->id) }}" method="post"
-                                              class="deleteForm">
-                                            @csrf
-                                            @method('delete')
-                                        </form>
+                                        @if(intval(Auth::user()->user_type) === 1)
+                                            <a href="{{ route('edit_transaction', $transaction->id) }}"
+                                               class="btn btn-sm btn-icon btn-primary"><i
+                                                    class="bi bi-pencil-square"></i></a>
+                                            <a href="#" onclick="$('#transaction_delete_{{$transaction->id}}').submit()"
+                                               class="btn btn-sm btn-icon btn-danger"
+                                               data-kt-ecommerce-category-filter="delete_row"><i
+                                                    class="bi bi-trash"></i></a>
+                                            <form id="transaction_delete_{{$transaction->id}}"
+                                                  action="{{ route('delete_transaction', $transaction->id) }}"
+                                                  method="post"
+                                                  class="deleteForm">
+                                                @csrf
+                                                @method('delete')
+                                            </form>
+                                        @else - @endif
 
 
                                 </tr>

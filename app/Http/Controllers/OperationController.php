@@ -7,6 +7,7 @@ use App\Models\Party;
 use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class OperationController extends Controller
@@ -277,9 +278,14 @@ class OperationController extends Controller
      */
     public function edit(Operation $operation)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         $data = $this->other_table_data();
 
-        return view('operation.edit', ['operation_type' => $this->operation_type, 'operation' => $operation, 'parties' => $data['party'], 'products' => $data['product']]);
+        return view('operation.edit', ['operation_type' => $this->operation_type, 'operation' => $operation, 'parties' => $data['parties'], 'products' => $data['products']]);
 
     }
 
@@ -292,6 +298,11 @@ class OperationController extends Controller
      */
     public function update(Request $request, Operation $operation)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         //validation
         $this->validation($request);
 
@@ -349,6 +360,11 @@ class OperationController extends Controller
      */
     public function destroy(Operation $operation)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         $operation->delete();
         if ($this->operation_type == 1) {
             return redirect()->route('purchases')->with('success', 'Successfully purchase deleted');

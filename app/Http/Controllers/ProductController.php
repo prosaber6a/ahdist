@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -72,6 +73,9 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
         return view('product.edit', ['product' => $product]);
     }
 
@@ -84,6 +88,10 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         $request->validate([
             'name' => 'required|string|max:60',
             'unit' => 'integer|max:50',
@@ -114,6 +122,9 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
         // Delete Other Table Info
         try {
             $product->delete();

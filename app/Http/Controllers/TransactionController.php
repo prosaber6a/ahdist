@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Party;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -254,6 +255,10 @@ EOD;
     public function edit(Transaction $transaction)
     {
 
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         $data = [];
         $data['transaction'] = $transaction;
         $data['accounts'] = Account::where('status', 1)->get();
@@ -277,6 +282,11 @@ EOD;
      */
     public function update(Request $request, Transaction $transaction)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         $this->validation($request);
 
         if (intval($request->type) !== 3) {
@@ -340,6 +350,11 @@ EOD;
      */
     public function destroy(Transaction $transaction)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         try {
             $transaction->delete();
         } catch (\Exception $exception) {

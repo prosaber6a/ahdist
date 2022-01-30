@@ -47,9 +47,9 @@
             const date_from = filter_from ? filter_from : '-';
             const date_to = filter_to ? filter_to : '-';
             if (party_id || acc_id || date_to || date_from) {
-                console.log('/api/operation/filter/{{ $operation_type }}/'+ party_id + '/' + date_from + '/' + date_to);
+                console.log('/api/operation/filter/{{ $operation_type }}/' + party_id + '/' + date_from + '/' + date_to);
                 $.ajax({
-                    url: '/api/operation/filter/{{ $operation_type }}/'+ party_id + '/' + date_from + '/' + date_to,
+                    url: '/api/operation/filter/{{ $operation_type }}/' + party_id + '/' + date_from + '/' + date_to,
                     method: 'GET',
                     success: function (response) {
                         response = JSON.parse(response)
@@ -267,7 +267,9 @@ footer {
                 <!--begin::Card body-->
                 <div class="card-body pt-0 overflow-scroll" id="printArea">
                     <!--begin::Table-->
-                    <table class="table table-responsive table-striped table-hover table-bordered gy-5 gs-7 border rounded" id="datatable">
+                    <table
+                        class="table table-responsive table-striped table-hover table-bordered gy-5 gs-7 border rounded"
+                        id="datatable">
                         <!--begin::Table head-->
                         <thead>
                         <!--begin::Table row-->
@@ -323,20 +325,22 @@ footer {
                                         {{ $operation->note }}
                                     </td>
                                     <td class="text-end action_cell">
-                                        <a href="@if($operation_type === 1){{ route('edit_purchase', $operation->id) }}@else{{ route('edit_sale', $operation->id) }}@endif"
-                                           class="btn btn-icon btn-primary btn-sm"><i
-                                                class="bi bi-pencil-square"></i></a>
-                                        <a href="#" onclick="$('#delete_operation_{{$operation->id}}').submit()"
-                                           class="btn btn-icon btn-danger btn-sm"
-                                           data-kt-ecommerce-category-filter="delete_row"><i
-                                                class="bi bi-trash"></i></a>
-                                        <form id="delete_operation_{{$operation->id}}" class="d-inline"
-                                              action="@if($operation_type === 1){{ route('delete_purchase', $operation->id) }}@else{{ route('delete_sale', $operation->id) }}@endif"
-                                              method="post"
-                                              class="deleteForm">
-                                            @csrf
-                                            @method('delete')
-                                        </form>
+                                        @if(intval(Auth::user()->user_type) === 1)
+                                            <a href="@if($operation_type === 1){{ route('edit_purchase', $operation->id) }}@else{{ route('edit_sale', $operation->id) }}@endif"
+                                               class="btn btn-icon btn-primary btn-sm"><i
+                                                    class="bi bi-pencil-square"></i></a>
+                                            <a href="#" onclick="$('#delete_operation_{{$operation->id}}').submit()"
+                                               class="btn btn-icon btn-danger btn-sm"
+                                               data-kt-ecommerce-category-filter="delete_row"><i
+                                                    class="bi bi-trash"></i></a>
+                                            <form id="delete_operation_{{$operation->id}}" class="d-inline"
+                                                  action="@if($operation_type === 1){{ route('delete_purchase', $operation->id) }}@else{{ route('delete_sale', $operation->id) }}@endif"
+                                                  method="post"
+                                                  class="deleteForm">
+                                                @csrf
+                                                @method('delete')
+                                            </form>
+                                        @else - @endif
 
                                     </td>
                                     <!--end::Action=-->

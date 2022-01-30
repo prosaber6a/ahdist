@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
@@ -110,6 +111,11 @@ class AccountController extends Controller
      */
     public function edit(Account $account)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
         return view('account.edit', ['account' => $account]);
     }
 
@@ -122,6 +128,13 @@ class AccountController extends Controller
      */
     public function update(Request $request, Account $account)
     {
+
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
+
         $this->validation($request);
 
         // set account new value
@@ -154,6 +167,12 @@ class AccountController extends Controller
      */
     public function destroy(Account $account)
     {
+
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
+
+
         // Delete Other Table Info
         try {
             $account->delete();

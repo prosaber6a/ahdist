@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Party;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PartyController extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      *
@@ -16,6 +19,7 @@ class PartyController extends Controller
     {
         $party = Party::orderBy('id', 'desc')->get();
         return view('party.index', ['parties' => $party]);
+
     }
 
     /**
@@ -78,6 +82,9 @@ class PartyController extends Controller
      */
     public function edit(Party $party)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
         return view('party.edit', ['party' => $party]);
     }
 
@@ -90,6 +97,9 @@ class PartyController extends Controller
      */
     public function update(Request $request, Party $party)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
         $request->validate([
             'name' => 'required|string|max:60',
             'company' => 'nullable|string|max:60',
@@ -127,6 +137,9 @@ class PartyController extends Controller
      */
     public function destroy(Party $party)
     {
+        if (intval(Auth::user()->user_type) !== 1) {
+            return redirect()->route('dashboard')->withError('Sorry permission required');
+        }
         // Delete Other Table Info
         try {
             $party->delete();
